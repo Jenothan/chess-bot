@@ -2,6 +2,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './App.css';
 
+const TypingEffect = ({ text, speed = 15 }) => {
+  const [displayedText, setDisplayedText] = React.useState('');
+  const [index, setIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    if (index < text.length) {
+      const timeout = setTimeout(() => {
+        setDisplayedText((prev) => prev + text[index]);
+        setIndex((prev) => prev + 1);
+      }, speed);
+      return () => clearTimeout(timeout);
+    }
+  }, [index, text, speed]);
+
+  return <span>{displayedText}</span>;
+};
+
 const App = () => {
   const [messages, setMessages] = useState([]);
   const [history, setHistory] = useState([]);
@@ -31,8 +48,8 @@ const App = () => {
         .filter(chat => chat.sessionId === sessionId)
         .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
         .map(chat => ([
-          { text: chat.userMessage, sender: "user", id: `${chat._id}-u` },
-          { text: chat.botReply, sender: "bot", id: `${chat._id}-b` }
+          { text: chat.userMessage, sender: "user", id: `${chat._id}-u`, shouldType: false },
+          { text: chat.botReply, sender: "bot", id: `${chat._id}-b`, shouldType: false }
         ])).flat();
 
       setMessages(currentSessionMessages);
@@ -60,8 +77,9 @@ const App = () => {
         message: userMessage,
         sessionId: sessionId
       });
-      setMessages(prev => [...prev, { text: response.data.reply, sender: "bot", id: tempId + 1 }]);
-      fetchHistory(); // Refresh sidebar titles
+      setMessages(prev => [...prev, { text: response.data.reply, sender: "bot", id: tempId + 1, shouldType: true }]);
+      // Wait a bit before fetching history to avoid state overwrite while typing
+      setTimeout(() => fetchHistory(), 1000); 
     } catch (error) {
       console.error("Error communicating with backend:", error);
       setMessages(prev => [...prev, { text: "Sorry, I'm having trouble connecting to the server.", sender: "bot", id: tempId + 2 }]);
@@ -171,7 +189,13 @@ const App = () => {
                   <div className="avatar">{msg.sender === 'bot' ? '♟️' : 'U'}</div>
                   <div className="message-bubble">
                     <div className="message-info">{msg.sender === 'bot' ? 'Coach' : 'You'}</div>
-                    <div className="text">{msg.text}</div>
+                    <div className="text">
+                      {msg.sender === 'bot' && msg.shouldType ? (
+                        <TypingEffect text={msg.text} />
+                      ) : (
+                        msg.text
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
