@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Environment Variables
+.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# NLP Model (if generated)
+model.nlp
+
+# OS files
+.DS_Store
+Thumbs.db
