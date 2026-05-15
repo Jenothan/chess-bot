@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const Rule = require('./models/Rule');
+const { run } = require('./database');
 const dotenv = require('dotenv');
 
 dotenv.config();
@@ -69,11 +68,18 @@ const initialRules = [
 
 const seedDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/chessbot');
-        console.log("Connected to MongoDB for seeding...");
+        console.log("Seeding SQLite database...");
 
-        await Rule.deleteMany({});
-        await Rule.insertMany(initialRules);
+        // Clear existing rules
+        await run('DELETE FROM rules');
+
+        // Insert new rules
+        for (const rule of initialRules) {
+            await run(
+                'INSERT INTO rules (intent, questions, answer) VALUES (?, ?, ?)',
+                [rule.intent, JSON.stringify(rule.questions), rule.answer]
+            );
+        }
 
         console.log(`Database seeded with ${initialRules.length} intents successfully!`);
         process.exit();
@@ -83,4 +89,5 @@ const seedDB = async () => {
     }
 };
 
-seedDB();
+// Give a moment for database initialization
+setTimeout(seedDB, 1000);

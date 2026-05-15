@@ -1,5 +1,4 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
@@ -14,15 +13,13 @@ app.use(cors());
 app.use(express.json());
 
 const { trainBot } = require('./chatbot/bot');
+const { db } = require('./database');
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/chessbot')
-    .then(async () => {
-        console.log('Successfully connected to MongoDB.');
-        // Train bot dynamically from database
-        await trainBot();
-    })
-    .catch((err) => console.error('MongoDB connection error:', err));
+// Give SQlite a moment to initialize tables
+setTimeout(async () => {
+    console.log('Database initialized. training bot...');
+    await trainBot();
+}, 1000);
 
 // Routes
 const chatRoutes = require('./routes/chat');

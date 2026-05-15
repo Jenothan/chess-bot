@@ -15,9 +15,8 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "mongodb": "^7.2.0",
-    "mongoose": "^9.6.2",
-    "node-nlp": "^5.0.0-alpha.5"
+    "node-nlp": "^5.0.0-alpha.5",
+    "sqlite3": "^6.0.1"
   },
   "description": "",
   "devDependencies": {

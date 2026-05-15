@@ -1,5 +1,5 @@
 const { NlpManager } = require('node-nlp');
-const Rule = require('../models/Rule');
+const { query } = require('../database');
 
 /**
  * Chatbot Logic
@@ -17,16 +17,17 @@ const trainBot = async () => {
         console.log('Bot training started (Dynamic from DB)...');
 
         // Fetch all rules from Database
-        const rules = await Rule.find();
+        const rules = await query('SELECT * FROM rules');
 
         if (rules.length === 0) {
-            console.log('No rules found in DB. Please run seed script.');
+            console.log('No rules found in SQLite DB. Please run seed script.');
             return;
         }
 
         // 1. Add Documents (Patterns) from questions array
         rules.forEach(rule => {
-            rule.questions.forEach(q => {
+            const questions = JSON.parse(rule.questions);
+            questions.forEach(q => {
                 manager.addDocument('en', q, rule.intent);
             });
 
